@@ -1,5 +1,5 @@
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -152,8 +152,8 @@ class Journey(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)
     destination = db.Column(db.String(50))
     start_time = db.Column(db.DateTime, default=datetime.now())
-    end_time = db.Column(db.DateTime, default=datetime.now() + datetime.day)
-    budget = db.Column(db.REAL)
+    end_time = db.Column(db.DateTime, default=datetime.now() + timedelta(days=3))
+    budget = db.Column(db.REAL, default=0.0)
     cover = db.Column(db.String(100))
     status = db.Column(db.Integer)
 
