@@ -1,0 +1,2 @@
+# run flask
+flask run
