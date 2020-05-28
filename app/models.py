@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import hashlib
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flask import current_app, request
+from flask import current_app, request, json
 
 from . import db
 
@@ -18,7 +18,7 @@ class User(db.Model):
     __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(20), unique=True, nullable=True, index=True)
-    email = db.Column(db.String(64), unique=True, index=True, default="None")
+    email = db.Column(db.String(64), index=True, default="None")
     password_hash = db.Column(db.String(128))
     # password = db.Column(db.String(20))
     # 头像图片
@@ -48,9 +48,6 @@ class User(db.Model):
         }
         return json_user
 
-    def verify_password(self, password):
-        return password == self.password
-
     def generate_auth_token(self, expiration):
         pass
 
@@ -64,7 +61,14 @@ class User(db.Model):
         return User.query.get(data['id'])
 
     def __init__(self, **kwargs):
+        """
+
+        :rtype: object
+        """
         super(User, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return json.dumps(self.to_json())
 
 
 class Label(db.Model):
@@ -103,7 +107,8 @@ class BillInfo(db.Model):
     status = db.Column(db.Integer, default=0)
 
     # 关系定义
-    owner = db.relationship('User', lazy=True, uselist=False)
+    #: owner 的关系已经在User模型中定义了，这里不需要再定义
+    # owner = db.relationship('User', lazy=True, uselist=False)
     label = db.relationship('Label', lazy=True, uselist=False)
     journey = db.relationship('Journey', lazy=True, uselist=False,
                               backref=db.backref('billinfos', lazy=True))
@@ -121,7 +126,7 @@ class BillInfo(db.Model):
             'label_name': self.label.name,
             'cost': self.cost,
             'count': self.count,
-            'date': self.date
+            'date': self.date.strftime('%Y-%m-%d %H:%M:%S')
         }
         return json_billinfo
 
@@ -130,6 +135,9 @@ class BillInfo(db.Model):
 
     def __init__(self, **kwargs):
         super(BillInfo, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return json.dumps(self.to_json())
 
 
 class BillItem(db.Model):
@@ -147,15 +155,19 @@ class BillItem(db.Model):
             'user_id': self.user_id,
             'status': self.status
         }
+        return json_item
 
     def __init__(self, **kwargs):
         super(BillItem, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return json.dumps(self.to_json())
 
 
 class Activity(db.Model):
     __tablename__ = 'activity'
     id = db.Column(db.Integer, primary_key=True)
-    journey_id = db.Column(db.Integer, db.ForeignKey('user.id'), )
+    journey_id = db.Column(db.Integer, db.ForeignKey('journey.id'), )
     title = db.Column(db.String(30), nullable=True)
     description = db.Column(db.String(100))
     order = db.Column(db.Integer, default=1)
@@ -178,11 +190,14 @@ class Activity(db.Model):
             'order': self.order,
             'location': self.location,
             'image': self.image,
-            'start_time': self.start_time,
-            'end_time': self.end_time,
+            'start_time': self.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'end_time': self.end_time.strftime('%Y-%m-%d %H:%M:%S'),
             'last_modify': self.last_modify
         }
         return activity_json
+
+    def __repr__(self):
+        return json.dumps(self.to_json())
 
     def __init__(self, **kwargs):
         super(Activity, self).__init__(**kwargs)
@@ -215,8 +230,8 @@ class Journey(db.Model):
             'name': self.name,
             'owner_id': self.owner_id,
             'destination': self.destination,
-            'start_time': self.start_time,
-            'end_time': self.end_time,
+            'start_time': self.start_time.strftime('%Y-%m-%d %H:%M:%S'),
+            'end_time': self.end_time.strftime('%Y-%m-%d %H:%M:%S'),
             'budget': self.budget,
             'cover': self.cover
         }
@@ -230,6 +245,9 @@ class Journey(db.Model):
 
     def __init__(self, **kwargs):
         super(Journey, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return json.dumps(self.to_json())
 
 
 class Share(db.Model):
@@ -247,14 +265,17 @@ class Share(db.Model):
         json_share = {
             'id': self.id,
             'journey_id': self.journey_id,
-            'uid': self.uid,
+            'user_id': self.user_id,
             'cost': self.cost,
             'image': self.image,
             'price': self.price,
             'description': self.description,
-            'date': self.date
+            'date': self.date.strftime('%Y-%m-%d %H:%M:%S')
         }
         return json_share
 
     def __init__(self, **kwargs):
         super(Share, self).__init__(**kwargs)
+
+    def __repr__(self):
+        return json.dumps(self.to_json())

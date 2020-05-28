@@ -1,6 +1,6 @@
 from flask import jsonify, json, request, current_app, url_for, make_response
 from . import api
-from ..models import Label,BillItem, BillInfo
+from ..models import Label,BillItem, BillInfo, Journey, User
 from .. import db
 from .util import message_json
 
@@ -29,7 +29,7 @@ def get_bill_info_items(bid):
 
 
 # 创建
-@api.route('/bill_info/new')
+@api.route('/bill_info/new', methods=['POST'])
 def create_bill_info():
     json_data = request.get_json()
     # 没有传送数据的情况
@@ -42,9 +42,20 @@ def create_bill_info():
                     description=data['description'],
                     label_id=data['label_id'],
                     cost=data['cost'],
-                    count=data['count']
                     )
     db.session.add(info)
+
+    # 为行程的所有用户添加记录
+    journey = Journey.query.get_or_404(data['journey_id'])
+    for user in journey.members:
+        item = BillItem(bill_info_id=info.id,
+                        user_id=user.id)
+        db.session.add(item)
+    # count 人数，即为所有成员的数量
+    info.count= len(journey.members)
     db.session.commit()
     return jsonify(info.to_json())
 
+
+#TODO 可以传入 members 信息，即哪些参加的人，来实现为部分人添加
+#

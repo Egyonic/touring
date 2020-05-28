@@ -36,12 +36,11 @@ def auth_error():
 
 
 # 使api blueprint中的路由都需要认证才能访问
-@api.before_request
-@auth.login_required
-def before_request():
-    pass
-    # if not g.current_user.is_anonymous:
-    #     return forbidden('Unconfirmed account')
+# @api.before_request
+# @auth.login_required
+# def before_request():
+#     pass
+
 
 
 # 用户通过这个函数来获取token

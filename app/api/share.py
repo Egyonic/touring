@@ -14,7 +14,7 @@ def get_share_info(sid):
 
 
 # 创建
-@api.route('/share/new')
+@api.route('/share/new',methods=['POST'])
 def create_share():
     json_data = request.get_json()
     # 没有传送数据的情况
@@ -24,7 +24,7 @@ def create_share():
     data = json.loads(json_data)
     share = Share(
         journey_id=data['journey_id'],
-        uid=data['uid'],
+        user_id=data['user_id'],
         cost=data['cost'],
         price=data['price'],
         description=data['description'],

@@ -13,8 +13,8 @@ def get_user_info(uid):
 
 
 # 创建
-@api.route('/users/new')
-def get_user_info():
+@api.route('/users/new', methods=['POST'])
+def create_user():
     json_data = request.get_json()
     # 没有传送数据的情况
     if json_data is None:
@@ -36,7 +36,7 @@ def get_user_info_by_name(name):
 
 
 # 获取用户的所有行程
-@api.route('users/<int:uid>/journeys')
+@api.route('/users/<int:uid>/journeys')
 def get_user_all_journeys(uid):
     user = User.query.get_or_404(uid)
     journeys = user.journeys

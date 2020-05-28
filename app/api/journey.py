@@ -1,8 +1,9 @@
-from flask import jsonify, json, request, current_app, url_for, make_response
+from flask import jsonify, json, request,logging ,url_for, make_response, current_app
 from . import api
 from ..models import User, Journey,user_journey, Activity,Label, BillInfo
 from .util import message_json
 from .. import db
+from dateutil import parser as time_parser
 
 
 @api.route('/journeys/<int:jid>')
@@ -70,30 +71,42 @@ def get_journey_activities(jid):
 
 
 # 通过Jsons数据创建一个行程
-@api.route('journeys/new', methods=['POST'])
+@api.route('/journeys/new', methods=['POST'])
 def create_journey():
+    logger1 = logging.create_logger(current_app)
     json_data = request.get_json()
     # 没有传送数据的情况
+    # logger1.info('------json data ------\n' + json.dumps(json_data))
     if json_data is None:
         return message_json('data required')
 
     data = json.loads(json_data)
+    if data['start_time'] is None or data['end_time'] is None:
+        return message_json('data required')
+    # 客户端在传值时必须给时间，不然是无法创建的
+    t1 = time_parser.parse(data['start_time'])
+    t2 = time_parser.parse(data['end_time'])
     journey = Journey(name=data['name'],
                       owner_id=data['owner_id'],
                       destination=data['destination'],
-                      start_time=data['start_time'],
-                      end_time=data['end_time'],
+                      start_time=t1,
+                      end_time=t2,
                       budget=data['budget'],
 
                       )
+    # 获取创建者用户对象
+    owner = User.query.get(journey.owner_id)
     db.session.add(journey)
-    db.commit()
+    # 将创建者加入该行程的成员中
+    # logger1.info(f'创建者:\n{owner.name}')
+    journey.members += [owner]
+    db.session.commit()
     return jsonify(journey.to_json())
 
 
 # 修改行程信息
-@api.route('journeys/<int:jid>update', methods=['POST'])
-def create_journey(jid):
+@api.route('/journeys/<int:jid>update', methods=['POST'])
+def update_journey_activity(jid):
     journey = Journey.query.get_or_404(jid)
     json_data = request.get_json()
     # 没有传送数据的情况
@@ -109,8 +122,9 @@ def create_journey(jid):
     journey['budget']=data['budget'],
     # 提交修改
     db.session.add(journey)
-    db.commit()
+    db.session.commit()
     return jsonify(journey.to_json())
+
 
 # TODO 创建行程时的图片上传处理
 @api.route('journey/<int:jid>/img-upload', methods=['POST'])
@@ -119,9 +133,8 @@ def img_upload(jid):
 
 
 
-# TODO 测试Table 的create是否生效
 # 添加成员
-@api.route('journey/<int:jid>/add-member', methods=['POST'])
+@api.route('/journey/<int:jid>/add-member', methods=['POST'])
 def journey_add_member(jid):
     journey = Journey.query.get_or_404(jid)
     json_data = request.get_json()
@@ -133,14 +146,15 @@ def journey_add_member(jid):
     # user 是一个列表，所有要加入行程的用户的id
     users = data['members']
     for u in users:
-        user_journey.create(u.id, jid)
-
+        user = User.query.get_or_404(u)
+        journey.members += [user]
+    db.session.commit()
     return message_json('succeed')
 
 
 # TODO 待测试
 # 删除成员
-@api.route('journey/<int:jid>/delete-member', methods=['POST'])
+@api.route('/journey/<int:jid>/delete-member', methods=['POST'])
 def journey_delete_member(jid):
     journey = Journey.query.get_or_404(jid)
     json_data = request.get_json()
@@ -153,13 +167,15 @@ def journey_delete_member(jid):
     user_id = data['user_id']
 
     if user_id is not None:
-        item = user_journey.query.get(user_id, jid)
-        db.session.delete(item)
+        u = User.query.get(user_id)
+        journey.members.remove(u)
         db.session.commit()
     return message_json('succeed')
 
+
+""" 这个方法暂时不需要，使用activity中的方法来实现
 # 为行程添加活动
-@api.route('journey/<int:jid>/add-activity', methods=['POST'])
+@api.route('/journey/<int:jid>/add-activity', methods=['POST'])
 def journey_add_activity(jid):
     journey = Journey.query.get_or_404(jid)
     json_data = request.get_json()
@@ -178,10 +194,7 @@ def journey_add_activity(jid):
                         end_time=data['end_time'],
                       )
     db.session.add(activity)
-    db.commit()
+    db.session.commit()
     return jsonify(activity.to_json())
 
-
-
-
-
+"""

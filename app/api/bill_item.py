@@ -11,8 +11,10 @@ def get_bill_item_info(bid):
     return jsonify(bill_info.to_json())
 
 
+# 暂时用不到这个方法
+# item创建都是在BillInfo创建时一起创建的
 # 创建
-@api.route('/bill_item/new')
+@api.route('/bill_item/new', methods=['POST'])
 def create_bill_item():
     json_data = request.get_json()
     # 没有传送数据的情况
@@ -30,15 +32,14 @@ def create_bill_item():
 
 
 # 跟新
-@api.route('/bill_item/update')
-def create_bill_item():
+@api.route('/bill_item/<int:iid>/update', methods=['POST'])
+def update_bill_item(iid):
+    item = BillItem.query.get_or_404(iid)
     json_data = request.get_json()
     # 没有传送数据的情况
     if json_data is None:
         return message_json('data required')
-
     data = json.loads(json_data)
-    item = BillItem.query.get_or_404(json_data['item_id'])
     item.status=data['status']
 
     db.session.add(item)
