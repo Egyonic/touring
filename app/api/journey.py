@@ -9,14 +9,14 @@ from random import randint
 import os
 
 
-@api.route('/journeys/<int:jid>')
+@api.route('/journey/<int:jid>')
 def get_journey_info(jid):
     journey = Journey.query.get_or_404(jid)
     return jsonify(journey.to_json())
 
 
 # 获取行程的所有成员信息
-@api.route('/journeys/<int:jid>/members')
+@api.route('/journey/<int:jid>/members')
 def get_journey_members(jid):
     journey = Journey.query.get_or_404(jid)
     members = journey.members
@@ -32,14 +32,14 @@ def get_journey_members(jid):
 
 
 # 返回创建者信息
-@api.route('/journeys/<int:jid>/owner')
+@api.route('/journey/<int:jid>/owner')
 def get_journey_owner(jid):
     journey = Journey.query.get_or_404(jid)
     return jsonify(journey.owner.to_json())
 
 
 # 返回行程所有账单
-@api.route('/journeys/<int:jid>/billinfos')
+@api.route('/journey/<int:jid>/billinfos')
 def get_journey_bill_infos(jid):
     journey = Journey.query.get_or_404(jid)
     billinfos = journey.billinfos
@@ -57,7 +57,7 @@ def get_journey_bill_infos(jid):
 
 
 # 获取行程的所有活动
-@api.route('/journeys/<int:jid>/activities')
+@api.route('/journey/<int:jid>/activities')
 def get_journey_activities(jid):
     journey = Journey.query.get_or_404(jid)
     activities = journey.activities
@@ -74,7 +74,7 @@ def get_journey_activities(jid):
 
 
 # 通过Jsons数据创建一个行程
-@api.route('/journeys/new', methods=['POST'])
+@api.route('/journey/new', methods=['POST'])
 def create_journey():
     logger1 = logging.create_logger(current_app)
     # json_data = request.get_json()
@@ -112,7 +112,7 @@ def create_journey():
 
 
 # 修改行程信息
-@api.route('/journeys/<int:jid>update', methods=['POST'])
+@api.route('/journey/<int:jid>update', methods=['POST'])
 def update_journey_activity(jid):
     journey = Journey.query.get_or_404(jid)
     # json_data = request.get_json()

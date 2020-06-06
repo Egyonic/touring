@@ -6,14 +6,14 @@ from .util import message_json
 from .. import db
 
 # 通过id返回用户信息
-@api.route('/users/<int:uid>')
+@api.route('/user/<int:uid>')
 def get_user_info(uid):
     user = User.query.get_or_404(uid)
     return jsonify(user.to_json())
 
 
 # 创建
-@api.route('/users/new', methods=['POST'])
+@api.route('/user/new', methods=['POST'])
 def create_user():
     # json_data = request.get_json()
     # # 没有传送数据的情况
@@ -31,7 +31,7 @@ def create_user():
 
 
 # 通过name返回用户信息
-@api.route('/users/<string:name>')
+@api.route('/user/<string:name>')
 def get_user_info_by_name(name):
     # 确定用户存在
     user = User.query.get_or_404(name=name)
@@ -39,7 +39,7 @@ def get_user_info_by_name(name):
 
 
 # 获取用户的所有行程
-@api.route('/users/<int:uid>/journeys')
+@api.route('/user/<int:uid>/journeys')
 def get_user_all_journeys(uid):
     user = User.query.get_or_404(uid)
     journeys = user.journeys
@@ -57,7 +57,7 @@ def get_user_all_journeys(uid):
 
 
 # 获取用户已经结束的行程
-@api.route('/users/<int:uid>/past-journeys')
+@api.route('/user/<int:uid>/past-journeys')
 def get_user_past_journeys(uid):
     user = User.query.get_or_404(uid)
     journeys = user.journeys
@@ -79,7 +79,7 @@ def get_user_past_journeys(uid):
 
 
 # 获取用户未开始的行程
-@api.route('/users/<int:uid>/later-journeys')
+@api.route('/user/<int:uid>/later-journeys')
 def get_user_later_journeys(uid):
     user = User.query.get_or_404(uid)
     journeys = user.journeys
@@ -101,7 +101,7 @@ def get_user_later_journeys(uid):
 
 
 # 获取用户正在进行的行程
-@api.route('/users/<int:uid>/present-journeys')
+@api.route('/user/<int:uid>/present-journeys')
 def get_user_present_journeys(uid):
     user = User.query.get_or_404(uid)
     journeys = user.journeys
