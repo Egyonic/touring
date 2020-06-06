@@ -16,12 +16,16 @@ def get_bill_item_info(bid):
 # 创建
 @api.route('/bill_item/new', methods=['POST'])
 def create_bill_item():
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
+    #
+    # data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
 
-    data = json.loads(json_data)
     item = BillItem(bill_info_id=data['bill_info_id'],
                     user_id=data['user_id']
                     )
@@ -35,11 +39,15 @@ def create_bill_item():
 @api.route('/bill_item/<int:iid>/update', methods=['POST'])
 def update_bill_item(iid):
     item = BillItem.query.get_or_404(iid)
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
-    data = json.loads(json_data)
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
+    # data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
+
     item.status=data['status']
 
     db.session.add(item)

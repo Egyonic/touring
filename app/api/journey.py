@@ -1,9 +1,11 @@
 from flask import jsonify, json, request,logging ,url_for, make_response, current_app
 from . import api
+from datetime import datetime,timedelta
 from ..models import User, Journey,user_journey, Activity,Label, BillInfo
 from .util import message_json
 from .. import db
 from dateutil import parser as time_parser
+from random import randint
 
 
 @api.route('/journeys/<int:jid>')
@@ -74,13 +76,17 @@ def get_journey_activities(jid):
 @api.route('/journeys/new', methods=['POST'])
 def create_journey():
     logger1 = logging.create_logger(current_app)
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    # logger1.info('------json data ------\n' + json.dumps(json_data))
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # # logger1.info('------json data ------\n' + json.dumps(json_data))
+    # if json_data is None:
+    #     return message_json('data required')
+    #
+    # data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
 
-    data = json.loads(json_data)
     if data['start_time'] is None or data['end_time'] is None:
         return message_json('data required')
     # 客户端在传值时必须给时间，不然是无法创建的
@@ -108,12 +114,16 @@ def create_journey():
 @api.route('/journeys/<int:jid>update', methods=['POST'])
 def update_journey_activity(jid):
     journey = Journey.query.get_or_404(jid)
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
 
-    data = json.loads(json_data)
+    # data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
+
     journey['name']=data['name']
     journey['owner_id']=data['owner_id'],
     journey['destination']=data['destination'],
@@ -137,12 +147,16 @@ def img_upload(jid):
 @api.route('/journey/<int:jid>/add-member', methods=['POST'])
 def journey_add_member(jid):
     journey = Journey.query.get_or_404(jid)
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
+    #
+    # data = json.loads(json_data)
 
-    data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
     # user 是一个列表，所有要加入行程的用户的id
     users = data['members']
     for u in users:
@@ -157,12 +171,16 @@ def journey_add_member(jid):
 @api.route('/journey/<int:jid>/delete-member', methods=['POST'])
 def journey_delete_member(jid):
     journey = Journey.query.get_or_404(jid)
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
+    #
+    # data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
 
-    data = json.loads(json_data)
     # user 是一个列表，所有要加入行程的用户的id
     user_id = data['user_id']
 
@@ -198,3 +216,75 @@ def journey_add_activity(jid):
     return jsonify(activity.to_json())
 
 """
+
+
+# 按日期分列表项返回活动信息
+@api.route('/journey/<int:jid>/activity-by-date', methods=['GET'])
+def journey_get_activity_by_date(jid):
+    journey = Journey.query.get_or_404(jid)
+    logger = logging.create_logger(current_app)
+    # 获取所有活动
+    activities = journey.activities
+    if activities is None or len(activities) == 0:
+        return jsonify({
+            'activities': [],
+            'count': 0
+        })
+
+    # 按开始日期排序后的列表
+    activities_by_date = sorted(activities,key=lambda x:x.start_time)
+    t_date = datetime(year=2000,month=1, day=1, hour=1,minute=1,second=1) # 初始化用于比较的日期
+    #t_date = activities[0].start_time # 初始化用于比较的日期
+    #t_date = t_date - timedelta(days=3)
+    items = []
+    for activity in activities_by_date:
+        # 如果没有出现过这个日期，创建一个新的对象
+        logger.info(f't_date.date type:{type(t_date)}')
+        if activity.start_time.date() != t_date.date():
+            logger.info(f'日期为{activity.start_time.date()}')
+            item = {
+                "date": f'{activity.start_time.date()}',
+                "activity": [activity.to_json()]
+            }
+            items.append(item)
+            logger.info(f'创建,添加了活动，日期为{activity.start_time.date()}')
+            # 跟新上次日期
+            t_date = activity.start_time
+        else:
+            for i in items:
+                # 寻找日期相同的组，加入其中
+                if i['date'] == f'{activity.start_time.date()}':
+                    i['activity'].append(activity.to_json())
+                    logger.info(f'添加了活动，日期为{activity.start_time.date()}')
+
+    return jsonify({
+        'data': items,
+        'days': len(items)
+    })
+
+
+# 随机获取一些行程，用于模拟发现，推荐等
+# count 参数指定要获取的数量
+@api.route('/journey/explore/<int:count>', methods=['GET'])
+def journey_get_random(count):
+    journeys = Journey.query.all()
+    length = len(journeys)
+
+    # 检查数量是否有效
+    data = []
+    if 0 < count <= length:
+        for i in range(0,count):
+            index = randint(0, length - 1)
+            data.append(journeys[index].to_json())
+        return jsonify({
+            "data": data,
+            "count": count
+        })
+    else:
+        return jsonify({
+            "message": "count is out of the limit"
+        })
+
+
+
+

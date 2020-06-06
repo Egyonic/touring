@@ -31,12 +31,17 @@ def get_bill_info_items(bid):
 # 创建
 @api.route('/bill_info/new', methods=['POST'])
 def create_bill_info():
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
+    #
+    # data = json.loads(json_data)
 
-    data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
+
     info = BillInfo(journey_id=data['journey_id'],
                     owner_id=data['owner_id'],
                     description=data['description'],

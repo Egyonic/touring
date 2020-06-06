@@ -279,3 +279,10 @@ class Share(db.Model):
 
     def __repr__(self):
         return json.dumps(self.to_json())
+
+
+
+class ativity_image(db.Model):
+    __tablename__ = 'activity_image'
+    id = db.Column(db.Integer, primary_key=True)
+    journey_id = db.Column(db.Integer, db.ForeignKey('journey.id'), nullable=True)

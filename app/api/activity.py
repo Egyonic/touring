@@ -1,4 +1,4 @@
-from flask import jsonify, json, request, current_app, url_for, make_response
+from flask import jsonify, json, request, current_app, url_for, make_response, logging
 from . import api
 from ..models import Journey, Activity
 from .util import message_json
@@ -14,7 +14,7 @@ def get_activity(aid):
 
 
 # 删除
-@api.route('/activity/<int:aid>/delete')
+@api.route('/activity/<int:aid>/delete', methods=['POST'])
 def delete_activity(aid):
     activity = Activity.query.get_or_404(aid)
     db.session.delete(activity)
@@ -25,12 +25,17 @@ def delete_activity(aid):
 # 添加
 @api.route('/activity/new', methods=['POST'])
 def create_activity():
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
+    #
+    # data = json.loads(json_data)
 
-    data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
+
     t1 = time_parser.parse(data['start_time'])
     t2 = time_parser.parse(data['end_time'])
     activity = Activity(
@@ -48,8 +53,10 @@ def create_activity():
 
 
 # TODO 图片处理， 跟新时需要用到
-@api.route('/activity/<int:aid>/update-image')
+@api.route('/activity/<int:aid>/update-image', methods=['POST'])
 def update_activity_image(aid):
+    activity = Activity.query.get_or_404(aid)
+
     pass
 
 
@@ -58,12 +65,17 @@ def update_activity_image(aid):
 @api.route('/activity/<int:aid>/update', methods=['POST'])
 def update_activity(aid):
     activity = Activity.query.get_or_404(aid)
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
 
-    data = json.loads(json_data)
+    # data = json.loads(json_data)
+
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
+
     t1 = time_parser.parse(data['start_time'])
     t2 = time_parser.parse(data['end_time'])
 

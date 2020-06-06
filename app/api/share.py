@@ -16,12 +16,17 @@ def get_share_info(sid):
 # 创建
 @api.route('/share/new',methods=['POST'])
 def create_share():
-    json_data = request.get_json()
-    # 没有传送数据的情况
-    if json_data is None:
-        return message_json('data required')
+    # json_data = request.get_json()
+    # # 没有传送数据的情况
+    # if json_data is None:
+    #     return message_json('data required')
+    #
+    # data = json.loads(json_data)
 
-    data = json.loads(json_data)
+    if request.data is None:
+        return jsonify({'message': 'data required'})
+    data = json.loads(request.data)
+
     share = Share(
         journey_id=data['journey_id'],
         user_id=data['user_id'],

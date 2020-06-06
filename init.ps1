@@ -7,8 +7,6 @@ $env:FLASK_DEBUG=1;
 $env:FLASK_CONFIG="development";
 
 
-$env:FLASKY_ADMIN="egyonic001s@163.com";
+echo "set environment variables";
+echo "activate Python virtual environment";
 
-
-echo "环境变量设置完毕"
-echo "进入局部Python虚拟环境"
