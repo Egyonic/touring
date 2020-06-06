@@ -1,10 +1,17 @@
-from flask import jsonify, json, request, current_app, url_for, make_response, logging
+from flask import jsonify, json, request, current_app, url_for, make_response, logging, send_from_directory
 from . import api
 from ..models import Journey, Activity
 from .util import message_json
 from .. import db
 from datetime import datetime
 from dateutil import parser as time_parser
+import os
+import uuid
+
+# 获取上传文件的接口
+@api.route('/uploads/<path:filename>')
+def get_upload_file(filename):
+    return send_from_directory(current_app.config['UPLOAD_PATH'],filename)
 
 
 @api.route('/activity/<int:aid>')
@@ -52,12 +59,38 @@ def create_activity():
     return jsonify(activity.to_json())
 
 
-# TODO 图片处理， 跟新时需要用到
+# 生产新的随机文件名的函数
+def random_filename(filename):
+    ext = os.path.splitext(filename)[1]
+    new_filename = uuid.uuid4().hex + ext
+    return new_filename
+
+
+# TODO 图片处理， 跟新图片时需要用到
 @api.route('/activity/<int:aid>/update-image', methods=['POST'])
 def update_activity_image(aid):
     activity = Activity.query.get_or_404(aid)
+    logger = logging.create_logger(current_app)
+    logger.info(f'headers:\n{request.headers}')
+    file = request.files.get('image')
+    if file:
+        # 获取新文件名
+        new_name = random_filename(file.filename)
+        file_path = os.path.join(current_app.config['UPLOAD_PATH'],new_name)
+        file.save(file_path)
+        # 保存图片的信心
+        activity.image = f'static/uploads/{new_name}'
+        db.session.add(activity)
+        db.session.commit()
+        return jsonify({
+            "message": "success"
+        })
+    else:
+        return jsonify({
+            "message": "error"
+        })
 
-    pass
+
 
 
 #: 跟新活动信息

@@ -2,10 +2,11 @@ from flask import jsonify, json, request,logging ,url_for, make_response, curren
 from . import api
 from datetime import datetime,timedelta
 from ..models import User, Journey,user_journey, Activity,Label, BillInfo
-from .util import message_json
+from .util import message_json, random_filename
 from .. import db
 from dateutil import parser as time_parser
 from random import randint
+import os
 
 
 @api.route('/journeys/<int:jid>')
@@ -136,10 +137,27 @@ def update_journey_activity(jid):
     return jsonify(journey.to_json())
 
 
-# TODO 创建行程时的图片上传处理
-@api.route('journey/<int:jid>/img-upload', methods=['POST'])
+# 创建行程时的图片上传处理
+@api.route('/journey/<int:jid>/update-image', methods=['POST'])
 def img_upload(jid):
     journey = Journey.query.get_or_404(jid)
+    file = request.files.get('image')
+    if file:
+        # 获取新文件名
+        new_name = random_filename(file.filename)
+        file_path = os.path.join(current_app.config['UPLOAD_PATH'], new_name)
+        file.save(file_path)
+        # 保存图片的信息
+        journey.cover = f'static/uploads/{new_name}'
+        db.session.add(journey)
+        db.session.commit()
+        return jsonify({
+            "message": "success"
+        })
+    else:
+        return jsonify({
+            "message": "error"
+        })
 
 
 

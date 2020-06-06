@@ -17,6 +17,8 @@ class Config:
 
     @staticmethod
     def init_app(app):
+        # 设定上传文件的路径
+        # app.config['UPLOAD_PATH'] = os.path.join(app.root_path,'app/static/')
         pass
 
 
