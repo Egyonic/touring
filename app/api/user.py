@@ -71,7 +71,7 @@ def get_user_past_journeys(uid):
     journey_arr = []
     for j in journeys:
         if j.end_time < datetime.now():
-            journey_arr += j
+            journey_arr.append(j)
     return jsonify({
         'journeys': [j.to_json() for j in journey_arr],
         'count': len(journey_arr)

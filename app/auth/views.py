@@ -35,8 +35,8 @@ def register():
 
 @auth.route('/login', methods=['POST'])
 def view_login():
-    logger = logging.create_logger(current_app)
-    logger.info(f'$data:\n{request.data}')
+    #logger = logging.create_logger(current_app)
+    #logger.info(f'$data:\n{request.data}')
     # json_data = request.get_json()
     # # 没有传送数据的情况
     # if json_data is None:
@@ -48,16 +48,16 @@ def view_login():
     if data['name'] is not None and data['password'] is not None:
         u = User.query.filter_by(name=data['name']).first()
         if u.verify_password(password=data['password'] ):
-            return jsonify(jsonify({
+            return jsonify({
                 "data": u.to_json(),
                 "message": 'success',
                 "status": 0
-            }))
+            })
         else:
-            return jsonify(jsonify({
+            return jsonify({
                 "data": {},
                 "message": 'password or account incorrect',
                 "status": -1
-            }))
+            })
     else:
         return jsonify({'message': 'correct data required'})
