@@ -52,7 +52,7 @@ def get_journey_bill_infos(jid):
 
     return jsonify({
         'billinfos': [info.to_json() for info in billinfos],
-        'count': 0
+        'count': len(billinfos)
     })
 
 

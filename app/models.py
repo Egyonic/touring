@@ -126,12 +126,20 @@ class BillInfo(db.Model):
             'label_name': self.label.name,
             'cost': self.cost,
             'count': self.count,
+            'paid-count': self.get_paid_count(),
             'date': self.date.strftime('%Y-%m-%d %H:%M:%S')
         }
         return json_billinfo
 
-    def get_status_list(self):
-        pass
+    # 获取该账单已经结清的人数
+    def get_paid_count(self):
+        count = 0
+        if len(self.items) != 0:
+            for i in self.items:
+                if i.status == 1:
+                    count = count+1
+        return count
+
 
     def __init__(self, **kwargs):
         super(BillInfo, self).__init__(**kwargs)
