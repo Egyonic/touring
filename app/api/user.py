@@ -1,8 +1,9 @@
 from flask import jsonify, json, request, current_app, url_for, make_response
 from . import api
+import os
 from ..models import User, Journey,Activity, Label,BillItem, BillInfo, Share
 from datetime import datetime
-from .util import message_json
+from .util import message_json, random_filename
 from .. import db
 
 # 通过id返回用户信息
@@ -120,3 +121,29 @@ def get_user_present_journeys(uid):
         'journeys': [j.to_json() for j in journey_arr],
         'count': len(journey_arr)
     })
+
+
+
+
+# 上传头像
+@api.route('/user/<int:uid>/update-image', methods=['POST'])
+def update_user_icon(uid):
+    user = User.query.get_or_404(uid)
+
+    file = request.files.get('image')
+    if file:
+        # 获取新文件名
+        new_name = random_filename(file.filename)
+        file_path = os.path.join(current_app.config['UPLOAD_PATH'],new_name)
+        file.save(file_path)
+        # 保存图片的信息
+        user.icon = f'static/uploads/{new_name}'
+        db.session.add(user)
+        db.session.commit()
+        return jsonify({
+            "message": "success"
+        })
+    else:
+        return jsonify({
+            "message": "error"
+        })
