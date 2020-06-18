@@ -126,7 +126,7 @@ class BillInfo(db.Model):
             'label_name': self.label.name,
             'cost': self.cost,
             'count': self.count,
-            'paid-count': self.get_paid_count(),
+            'paid_count': self.get_paid_count(),
             'date': self.date.strftime('%Y-%m-%d %H:%M:%S')
         }
         return json_billinfo
