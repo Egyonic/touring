@@ -70,8 +70,8 @@ def random_filename(filename):
 @api.route('/activity/<int:aid>/update-image', methods=['POST'])
 def update_activity_image(aid):
     activity = Activity.query.get_or_404(aid)
-    logger = logging.create_logger(current_app)
-    logger.info(f'headers:\n{request.headers}')
+    # logger = logging.create_logger(current_app)
+    # logger.info(f'headers:\n{request.headers}')
     file = request.files.get('image')
     if file:
         # 获取新文件名

@@ -18,7 +18,7 @@ def create_app(config_name="development"):
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
     # 设定上传文件的路径
-    app.config['UPLOAD_PATH'] = os.path.join(app.root_path, 'static\\uploads')
+    app.config['UPLOAD_PATH'] = os.path.join(app.root_path, 'static/uploads')
 
     bootstrap.init_app(app)
     moment.init_app(app)
